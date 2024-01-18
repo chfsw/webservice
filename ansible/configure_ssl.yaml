@@ -1,0 +1,29 @@
+---
+- name: Configure Apache to Listen on Port 443
+  hosts: webservers
+  become: yes
+
+  tasks:
+
+    - name: Update httpd.conf to listen on 443
+      lineinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        regexp: '^Listen'
+        line: 'Listen 443'
+
+    - name: Set up SSL VirtualHost
+      blockinfile:
+        path: /etc/httpd/conf.d/ssl.conf
+        block: |
+          <VirtualHost _default_:443>
+            SSLEngine on
+            SSLCertificateFile /etc/ssl/certs/mycert.crt
+            SSLCertificateKeyFile /etc/ssl/private/mykey.key
+            # Other directives...
+          </VirtualHost>
+        marker: "# {mark} ANSIBLE MANAGED BLOCK"
+
+    - name: Restart Apache service
+      service:
+        name: httpd
+        state: restarted

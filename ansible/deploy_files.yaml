@@ -1,0 +1,35 @@
+- name: Deploy files to EC2 instances
+  hosts: all
+  become: yes  # If necessary, to gain elevated permissions
+
+  tasks:
+    - name: Ensure mod_ssl is installed
+      yum:
+        name: mod_ssl
+        state: present
+    - name: Ensure httpd is installed
+      yum:
+        name: httpd
+        state: present
+    - name: Copy HTML file to EC2 instances
+      copy:
+        src: ./index.html
+        dest: /var/www/html/index.html
+        owner: ec2-user   
+        group: ec2-user
+        mode: '0644'
+
+    - name: Copy cert file to EC2 instances
+      copy:
+        src: ./mycert.crt
+        dest: /etc/ssl/certs/mycert.crt
+    - name: Make sure the existance of the directory
+      file:
+        path: /etc/ssl/private
+        state: directory
+        mode: 0755
+    - name: Copy key file to EC2 instances
+      copy:
+        src: ./mykey.key
+        dest: /etc/ssl/private/mykey.key
+        mode: 600
